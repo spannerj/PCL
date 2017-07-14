@@ -7,12 +7,13 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-# import Image
-# import pytesseract
+import os 
 
-# print(pytesseract.image_to_string(Image.open('cropped_maindraw.png')))
-# print(pytesseract.image_to_string(Image.open('cropped_stackpot.png')))
-# print(pytesseract.image_to_string(Image.open('cropped_survey.png')))
+# remove all existing screenshots
+filelist = [ f for f in os.listdir(".") if f.endswith(".png")]
+for f in filelist:
+    os.remove(f)
+
 
 def crop_image(image, long=False):
     from shutil import copyfile
@@ -101,25 +102,25 @@ crop_image('stackpot.png', True)
 print('sending email')
 fromaddr = "spencer.jago.main@gmail.com"
 toaddr = "spencer.jago@gmail.com"
- 
+
 msg = MIMEMultipart()
- 
+
 msg['From'] = fromaddr
 msg['To'] = toaddr
 msg['Subject'] = "POSTCODE LOTTERY"
- 
+
 body = "Todays winners\n"
- 
+
 msg.attach(MIMEText(body, 'plain'))
- 
+
 filename1 = "cropped_maindraw.png"
-attachment1 = open("/Users/Spencer/Code/pcl/cropped_maindraw.png", "rb")
+attachment1 = open("/Users/spencerjago/Git/Personal/PCL/cropped_maindraw.png", "rb")
 filename2 = "cropped_survey.png"
-attachment2 = open("/Users/Spencer/Code/pcl/cropped_survey.png", "rb")
+attachment2 = open("/Users/spencerjago/Git/Personal/PCL/cropped_survey.png", "rb")
 # filename3 = "video.png"
-# attachment3 = open("/Users/Spencer/Code/pcl/cropped_video.png", "rb")
+# attachment3 = open("/Users/spencerjago/Git/Personal/PCL/cropped_video.png", "rb")
 filename4 = "cropped_stackpot.png"
-attachment4 = open("/Users/Spencer/Code/pcl/cropped_stackpot.png", "rb")
+attachment4 = open("/Users/spencerjago/Git/Personal/PCL/cropped_stackpot.png", "rb")
  
 part1 = MIMEBase('application', 'octet-stream')
 part2 = MIMEBase('application', 'octet-stream')
