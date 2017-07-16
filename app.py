@@ -14,7 +14,6 @@ filelist = [ f for f in os.listdir(".") if f.endswith(".png")]
 for f in filelist:
     os.remove(f)
 
-
 def crop_image(image, long=False):
     from shutil import copyfile
     copyfile(image, "working_image.png")
@@ -31,6 +30,7 @@ driver = webdriver.PhantomJS()
 driver.implicitly_wait(30)
 driver.set_window_size(1120, 550)
 
+# ----------- LOGIN -----------------------------
 driver.get("https://freepostcodelottery.com/")
 driver.find_element_by_class_name("cancel-btn").click()
 sleep(10)
@@ -42,10 +42,14 @@ try:
     driver.find_element_by_class_name("dismiss").click()
 except:
     pass
-print('taking login screen shot')
+
+# ------------- MAINDRAW -------------------------
+print('taking maindraw screen shot')
 sleep(10)
 driver.save_screenshot('maindraw.png')
 driver.find_element_by_link_text('Check Survey draw').click()
+
+# ------------- SURVEY ---------------------------
 print('taking survey screen shot')
 sleep(60)
 try:
@@ -57,6 +61,7 @@ finally:
     driver.find_element_by_link_text('Check Video draw').click()
 sleep(20)
 
+# -------------- VIDEO ----------------------------
 container = driver.find_element_by_class_name("vjs-tech")
 button = driver.find_element_by_class_name("vjs-big-play-button")
 ActionChains(driver).move_to_element(container).click(button).perform()
@@ -67,6 +72,8 @@ print('taking video screen shot')
 sleep(40)
 driver.save_screenshot('video.png')
 driver.find_element_by_link_text('Check the Stackpot').click()
+
+# --------------- STACKPOT ---------------------------
 print('taking stackpot screen shot')
 try:
     driver.find_element_by_class_name("dismiss").click()
@@ -79,26 +86,35 @@ try:
 except:
     pass
 sleep(40)
+
+# ---------------- BONUS -----------------------------
+print('taking bonus screen shot')
 driver.save_screenshot('bonus.png')
 driver.get("https://freepostcodelottery.com/sponsored/")
 sleep(10)
 elems = driver.find_elements_by_link_text('Get your entry for today')
 elems[0].click()
 sleep(60)
+
+# ------------------- GROUPON ------------------------
 driver.save_screenshot('groupon.png')
 driver.execute_script("window.history.go(-1)")
 elems = driver.find_elements_by_link_text('Get your entry for today')
 elems[1].click()
 sleep(60)
+
+# --------------------- QUIDCO -----------------------
 driver.save_screenshot('quidco.png')
 
 driver.quit()
 
+# Tidy up screenshots so we only see postcodes
 crop_image('maindraw.png')
 crop_image('survey.png')
 crop_image('video.png')
 crop_image('stackpot.png', True)
 
+# Prepare the email and attach the screenshots
 print('sending email')
 fromaddr = "spencer.jago.main@gmail.com"
 toaddr = "spencer.jago@gmail.com"
@@ -113,36 +129,49 @@ body = "Todays winners\n"
 
 msg.attach(MIMEText(body, 'plain'))
 
-filename1 = "cropped_maindraw.png"
-attachment1 = open("/Users/spencerjago/Git/Personal/PCL/cropped_maindraw.png", "rb")
-filename2 = "cropped_survey.png"
-attachment2 = open("/Users/spencerjago/Git/Personal/PCL/cropped_survey.png", "rb")
-# filename3 = "video.png"
-# attachment3 = open("/Users/spencerjago/Git/Personal/PCL/cropped_video.png", "rb")
-filename4 = "cropped_stackpot.png"
-attachment4 = open("/Users/spencerjago/Git/Personal/PCL/cropped_stackpot.png", "rb")
+def attach_screenshot(filename, msg):
+    attachment = open("/Users/spencerjago/Git/Personal/PCL/{}".format(filename), "rb" )
+    part = MIMEBase('application', 'octet-stream')
+    part.set_payload((attachment).read())
+    encoders.encode_base64(part)
+    part.add_header('Content-Disposition', "attachment; filename= %s" % filename)
+    msg.attach(part)
+
+ attach_screenshot('cropped_maindraw.png', msg)   
+ attach_screenshot('cropped_survey.png', msg)   
+#  attach_screenshot('cropped_video.png', msg)   
+ attach_screenshot('cropped_stackpot.png', msg)   
+
+# filename1 = "cropped_maindraw.png"
+# attachment1 = open("/Users/spencerjago/Git/Personal/PCL/cropped_maindraw.png", "rb")
+# filename2 = "cropped_survey.png"
+# attachment2 = open("/Users/spencerjago/Git/Personal/PCL/cropped_survey.png", "rb")
+# # filename3 = "video.png"
+# # attachment3 = open("/Users/spencerjago/Git/Personal/PCL/cropped_video.png", "rb")
+# filename4 = "cropped_stackpot.png"
+# attachment4 = open("/Users/spencerjago/Git/Personal/PCL/cropped_stackpot.png", "rb")
  
-part1 = MIMEBase('application', 'octet-stream')
-part2 = MIMEBase('application', 'octet-stream')
-# part3 = MIMEBase('application', 'octet-stream')
-part4 = MIMEBase('application', 'octet-stream')
-part1.set_payload((attachment1).read())
-part2.set_payload((attachment2).read())
-# part3.set_payload((attachment3).read())
-part4.set_payload((attachment4).read())
-encoders.encode_base64(part1)
-encoders.encode_base64(part2)
-# encoders.encode_base64(part3)
-encoders.encode_base64(part4)
-part1.add_header('Content-Disposition', "attachment; filename= %s" % filename1)
-part2.add_header('Content-Disposition', "attachment; filename= %s" % filename2)
-# part3.add_header('Content-Disposition', "attachment; filename= %s" % filename3)
-part4.add_header('Content-Disposition', "attachment; filename= %s" % filename4)
+# part1 = MIMEBase('application', 'octet-stream')
+# part2 = MIMEBase('application', 'octet-stream')
+# # part3 = MIMEBase('application', 'octet-stream')
+# part4 = MIMEBase('application', 'octet-stream')
+# part1.set_payload((attachment1).read())
+# part2.set_payload((attachment2).read())
+# # part3.set_payload((attachment3).read())
+# part4.set_payload((attachment4).read())
+# encoders.encode_base64(part1)
+# encoders.encode_base64(part2)
+# # encoders.encode_base64(part3)
+# encoders.encode_base64(part4)
+# part1.add_header('Content-Disposition', "attachment; filename= %s" % filename1)
+# part2.add_header('Content-Disposition', "attachment; filename= %s" % filename2)
+# # part3.add_header('Content-Disposition', "attachment; filename= %s" % filename3)
+# part4.add_header('Content-Disposition', "attachment; filename= %s" % filename4)
  
-msg.attach(part1)
-msg.attach(part2)
-# msg.attach(part3)
-msg.attach(part4)
+# msg.attach(part1)
+# msg.attach(part2)
+# # msg.attach(part3)
+# msg.attach(part4)
  
 server = smtplib.SMTP('smtp.gmail.com', 587)
 server.starttls()
